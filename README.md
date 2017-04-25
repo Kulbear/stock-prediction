@@ -6,8 +6,11 @@ Stock price prediction with RNN. The data we used is from the Chinese stock.
 
 - Python 3.5
 - TuShare 0.7.4
-- Pandas
-- TODO...
+- Pandas 0.19.2
+- Keras 1.2.2
+- Numpy 1.12.0
+- scikit-learn 0.18.1
+- TensorFlow 1.0 (GPU version recommended)
 
 I personally recommend you to use Anaconda to build your virtual environment. And the program probably cost a significant time if you are not using the GPU version Tensorflow.
 
@@ -15,8 +18,8 @@ I personally recommend you to use Anaconda to build your virtual environment. An
 
 You can run `fetch_data.py` to get a piece of test data. Without changing the script, you can get two seperated csv file named:
 
-- 000002-from-1995-01-01.csv =====> Contains general data for stock 000002 from 1995-01-01 to today.
-- 000002-3-year.csv =====> Contains candlestick chart data for stock 000002 (万科A) for the most recent 3 years.
+- `000002-from-1995-01-01.csv` =====> Contains general data for stock 000002 from 1995-01-01 to today.
+- `000002-3-year.csv` =====> Contains candlestick chart data for stock 000002 (万科A) for the most recent 3 years.
 
 You are expected to see results look like (the first DataFrame contains general data where the the second contains detailed candlestick chart data):
 
@@ -49,12 +52,11 @@ Saving DataFrame:
 
 ## Demo
 
-TODO...
-
-## Acknowledgement
-
-TODO...
+<div style="text-align:center">
+	<img src="https://cloud.githubusercontent.com/assets/14886380/25383467/de39614e-29ee-11e7-9a3c-ac9e34720b54.png" alt="Training Result Demo" style="width: 450px;"/>
+</div>
 
 ## Reference
 
-TODO...
+- [Time Series Prediction with LSTM Recurrent Neural Networks in Python with Keras](http://machinelearningmastery.com/time-series-prediction-lstm-recurrent-neural-networks-python-keras/)
+- [Understanding LSTM Networks by Christopher Olah](http://colah.github.io/posts/2015-08-Understanding-LSTMs/)
