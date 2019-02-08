@@ -50,6 +50,11 @@ Saving DataFrame:
 4  21.038  486615.13  378825.52  461835.35  20.70
 ```
 
+## Train and Predict Automatically
+Add the stock code into the stocklist.txt  
+python batch.py train  
+python batch.py predict
+
 ## Demo
 
 <div style="text-align:center">
