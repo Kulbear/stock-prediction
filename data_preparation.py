@@ -38,10 +38,8 @@ def get_data(traingdata = True):
         print(stock_index)
         if traingdata:
             csv_name = './trainingdata/%s'%(stock_index)
-            if os.path.exists(csv_name):
-                continue
         else:
-            csv_name = './inferencedata/%s' % (stock_index)
+            csv_name = './inferencedata/%s'%(stock_index)
         # the data saved to csv order by date, the latest date is at the top.
         df = ts.get_h_data(stock_index, start=start_date, autype=None, retry_count=5, pause=5)
         df = df.sort_index(ascending=True)
