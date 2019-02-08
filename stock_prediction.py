@@ -20,6 +20,10 @@ import pandas as pd
 import sklearn.preprocessing as prep
 import os
 
+if not os.path.exists('./trainedmodels'):
+    os.mkdir('./trainedmodels')
+if not os.path.exists('./inferenceresult'):
+    os.mkdir('./inferenceresult')
 
 def get_stocks():
     stocks = {}
