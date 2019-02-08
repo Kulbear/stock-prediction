@@ -31,7 +31,7 @@ def get_data(traingdata = True):
         start_date = '1995-01-01'
         end_date = None  # We will use today as the end date here, you can specify one if you want
     else:
-        start_date = '2018-01-01'
+        start_date = '2018-06-01'
         end_date = None  # We will use today as the end date here, you can specify one if you want
 
     for (stock_index, stock_name) in stocks.items():
@@ -60,6 +60,6 @@ def get_data(traingdata = True):
 
 
 if __name__ == "__main__":
-    get_data(True)
+    get_data(False)
 
 

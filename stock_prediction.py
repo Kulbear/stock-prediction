@@ -13,7 +13,7 @@
 import time
 import math
 from keras.models import Sequential
-from keras.layers.core import Dense, Dropout, Activation
+from keras.layers.core import Dense, Dropout, Activation,Flatten
 from keras.layers.recurrent import LSTM
 import numpy as np
 import pandas as pd
@@ -67,8 +67,6 @@ def preprocess_training_data(stock, seq_len):
     preprocessor_y = prep.StandardScaler().fit(y)
     y_train = preprocessor_y.transform(y_train)
     y_test = preprocessor_y.transform(y_test)
-    y_train = y_train.reshape(y_train.shape[0])
-    y_test = y_test.reshape(y_test.shape[0])
 
     return [x_train, y_train, x_test, y_test, preprocessor_sample, preprocessor_y]
 
@@ -113,30 +111,62 @@ def preprocess_inference_data(stock, seq_len):
 
 # In[5]:
 
-def build_model(layers):
+def build_model(model_input_dim, model_window):
     model = Sequential()
 
 
     # By setting return_sequences to True we are able to stack another LSTM layer
     model.add(LSTM(
-        input_dim=layers[0],
-        output_dim=layers[1],
+        input_dim=model_input_dim,
+        input_length=model_window,
+        output_dim=20,
         return_sequences=True))
     model.add(Dropout(0.4))
 
     model.add(LSTM(
-        layers[2],
+        100,
         return_sequences=False))
     model.add(Dropout(0.3))
 
     model.add(Dense(
-        output_dim=layers[3]))
+        output_dim=1))
     model.add(Activation("linear"))
 
     start = time.time()
     model.compile(loss="mse", optimizer="rmsprop", metrics=['accuracy'])
     return model
 
+
+def build_model_1(model_input_dim, model_window):
+    model = Sequential()
+
+
+    # By setting return_sequences to True we are able to stack another LSTM layer
+    model.add(LSTM(
+        input_dim=model_input_dim,
+        input_length=model_window,
+        output_dim=20,
+        return_sequences=True))
+    model.add(Dropout(0.4))
+
+    model.add(LSTM(
+        20,
+        return_sequences=True))
+    model.add(Dropout(0.4))
+
+    model.add(LSTM(
+        100,
+        return_sequences=False))
+    model.add(Dropout(0.3))
+    # model.add(Flatten())
+
+    model.add(Dense(
+        output_dim=1))
+    model.add(Activation("linear"))
+
+    start = time.time()
+    model.compile(loss="mse", optimizer="rmsprop", metrics=['accuracy'])
+    return model
 
 
 def train():
@@ -151,38 +181,34 @@ def train():
             df = df[col_list]
             X_train, y_train, X_test, y_test, preprocessor_x, preprocessor_y = preprocess_training_data(df, window)
 
-            model = build_model([X_train.shape[2], window, 100, 1])
+            model = build_model(X_train.shape[2], window)
             model.fit(
                 X_train,
                 y_train,
-                batch_size=768,
-                nb_epoch=5,
-                validation_split=0.1,
+                batch_size=128,
+                nb_epoch=10,
+                validation_split=0.0,
                 verbose=0)
-
-            print("%s: Shape train_x %s, train_y %s" % (stock_index, str(X_train.shape), str(y_train.shape)))
-            trainScore = model.evaluate(X_train, y_train, verbose=0)
-            print('%s: Train Score %.2f, MSE (%.2f RMSE)' % (stock_index, trainScore[0], math.sqrt(trainScore[0])))
 
             print("%s: Shape test_x %s, test_y %s" % (stock_index, str(X_test.shape), str(y_test.shape)))
             testScore = model.evaluate(X_test, y_test, verbose=0)
             print('%s: Test Score: %.2f MSE (%.2f RMSE)' % (stock_index, testScore[0], math.sqrt(testScore[0])))
-            stocksTestScores[stock_index] = testScore[0]
+            stocksTestScores[stock_index] = math.sqrt(testScore[0])
 
             model.save("./trainedmodels/%s.model"%(stock_index), True)
 
             diff = []
             ratio = []
             pred = model.predict(X_test)
-            for u in range(len(y_test)):
-                pr = pred[u][0]
-                ratio.append((y_test[u] / pr) - 1)
-                diff.append(abs(y_test[u] - pr))
-
-            pred = preprocessor_y.inverse_transform(pred.reshape(pred.shape[0],1))
+            pred = preprocessor_y.inverse_transform(pred)
             pred = pred.reshape(pred.shape[0])
-            y_test = preprocessor_y.inverse_transform(y_test.reshape(y_test.shape[0],1))
+            y_test = preprocessor_y.inverse_transform(y_test)
             y_test = y_test.reshape(y_test.shape[0])
+
+            for u in range(len(y_test)):
+                pr = pred[u]
+                ratio.append((y_test[u]/ pr) - 1)
+                diff.append(abs(y_test[u] - pr))
 
             import matplotlib.pyplot as plt2
             plt2.title(stock_index)
@@ -199,6 +225,7 @@ def train():
 def predict():
     stocks = get_stocks()
     window = 20
+    result = {}
     for (stock_index, stock_name) in stocks.items():
         try:
             from keras.models import load_model
@@ -208,8 +235,9 @@ def predict():
             date, samples, y, preprocessor_x, preprocessor_y = preprocess_inference_data(df, window)
 
             pred = model.predict(samples)
-            pred = preprocessor_y.inverse_transform(pred.reshape(pred.shape[0], 1))
+            pred = preprocessor_y.inverse_transform(pred)
             pred = pred.reshape(pred.shape[0])
+            result[stock_index] = [y[-3],y[-2],pred[-1]]
 
             import csv
             with open('./inferenceresult/%s' % (stock_index), 'w', newline='') as f:
@@ -230,6 +258,8 @@ def predict():
 
         except Exception as e:
             print(e)
+    print(result)
+
 
 
 if __name__ == "__main__":
